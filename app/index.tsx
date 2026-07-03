@@ -1,111 +1,169 @@
-import { StyleSheet, View, Text } from "react-native";
-import { useState } from "react"; 
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, StyleSheet, FlatList } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import Header from "../components/Header";
+import InputField from "../components/InputField";
+import PrimaryButton from "../components/PrimaryButton";
+import MealItem from "../components/MealItem";
+import MealTypeOption from "../components/MealTypeOption";
+import { useState } from "react";
 
-import Card from "@/components/Card"
-import Header from "@/components/Header"
-import PrimaryButton from "@/components/PrimaryButton"
-import InputField from "@/components/InputField"
+type Meal = {
+  id: string;
+  name: string;
+  type: "Breakfast" | "Lunch" | "Dinner";
+};
 export default function Index() {
+  const [mealType, setMealType] = useState<Meal["type"] | "">("");
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [mealName, setMealName] = useState("");
 
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [bio, setBio] = useState("")
-  const [checking, setChecking] = useState(false)
+  const [structure, setStructure] = useState({}); // using this variable to check structure of data in prevMeals and ...prevMeals when we append new meal
 
-  const validateData = () => {
-    // validate data
-    if(name.length < 5) {
-      alert("Name must be at least 5 characters long")
+  const AddMeal = () => {
+
+    if (!mealName.trim() || mealType === "") {
+      alert("Please enter a meal name and select a meal type.");
       return;
     }
+        
+    const newMeal: Meal = {
+      id: Date.now().toString(),
+      name: mealName.trim(),
+      type: mealType,
+    };
 
-    if(bio.length < 10) {
-      alert("Bio must be at least 10 characters long")
-      return;
-    }
+    // setMeals((prevMeals) => [...prevMeals, newMeal]);
+    setMeals((prevMeals) => {
+      // console.log("prevMeals ",prevMeals)
+      // console.log("spread kar raha hu ",...prevMeals)
+      setStructure([prevMeals, newMeal]);
+      console.log("structure ", structure)
 
-    setChecking(true);
+      return [...prevMeals, newMeal];
+    });
+    setMealName("");
+    setMealType("");
   }
 
-  const editProfile = () => {
-    setChecking(false);
+  const deleteMeal = (id: string) => {
+    setMeals((prevMeals) => {
+      return prevMeals.filter((meal) => meal.id !== id);
+    });
   }
-
   return (
-    <View style={styles.container}>
-      <Header />
-      <Card>
-        {checking ? (
-          <>
-            <Text style={styles.value}>
-              <Text style={styles.label}>Name: </Text>
-              {name}
-            </Text>
+    <SafeAreaView style={styles.container}>
+      <Header 
+      icon="restaurant-outline"
+      title="Meal Tracker" 
+      />
 
-            <Text style={styles.value}>
-              <Text style={styles.label}>Email: </Text>
-              {email}
-            </Text>
+      <View style={styles.form}>
+        <InputField
+          keyboardType="default"
+          placeholder="Meal Name"
+          value={mealName}
+          onChangeText={setMealName}
+        />
 
-            <Text style={styles.value}>
-              <Text style={styles.label}>Bio: </Text>
-              {bio}
-            </Text>
-          </>
-        ) : (
-          <>
-            <InputField 
-              placeholder="Name"
-              value={name}
-              onChangeText={setName}
-              keyboardType="default"
-            />
-            <InputField 
-              placeholder="Email"
-              onChangeText={setEmail}
-              value={email}
-              keyboardType="email-address"
-            />
-            <InputField 
-              placeholder="Bio"
-              onChangeText={setBio}
-              value={bio}
-              keyboardType="default"
-            />
-        </>
-      )}
+        <MealTypeOption
+          label="Breakfast"
+          selected={mealType === "Breakfast"}
+          onPress={() => {
+            setMealType("Breakfast")
+          }}
+        />
 
-      </Card>
-      <View style={styles.buttonContainer}>
-        <PrimaryButton title="Edit Profile" onPress={editProfile} />
-        <PrimaryButton title="Save Profile" onPress={validateData} />
+        <MealTypeOption
+          label="Lunch"
+          selected={mealType === "Lunch"}
+          onPress={() => {
+            setMealType("Lunch")
+          }}
+        />
+
+        <MealTypeOption
+          label="Dinner"
+          selected={mealType === "Dinner"}
+          onPress={() => {
+            setMealType("Dinner")
+          }}
+        />
+
+        <PrimaryButton
+          title="Add Meal"
+          onPress={AddMeal}
+        />
       </View>
-    </View>
+
+
+      <View style={styles.listContainer}>
+        <Text style={styles.heading}>Meals</Text>
+
+        <FlatList
+          data={meals}
+          renderItem={({ item }) => (
+          <MealItem
+            name={item.name}
+            type={item.type}
+            onPress={() => deleteMeal(item.id)}
+          />
+          )} 
+          keyExtractor={(item) => item.id}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons
+                name="fast-food-outline"
+                size={60}
+                color="#cbd5e1"
+              />
+              <Text style={styles.emptyTitle}>🍽️ No meals yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Add your first meal above.
+              </Text>
+            </View>
+          }
+        />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 24,
-  },
-    buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12, // Modern React Native supports this
-    marginTop: 20,
-  },
-    label: {
-    color: "#ff0000",
-    fontWeight: "700",
+    padding: 20,
+    backgroundColor: "#f8fafc",
   },
 
-  value: {
-    color: "#0F172A",
+  form: {
+    marginTop: 20,
+    gap: 16,
+  },
+
+  listContainer: {
+    flex: 1,
+    marginTop: 24,
+  },
+
+  heading: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 16,
+  },
+
+  emptyContainer: {
+    marginTop: 60,
+    alignItems: "center",
+  },
+
+  emptyTitle: {
     fontSize: 18,
-    marginTop: 12,
+    fontWeight: "600",
+  },
+
+  emptySubtitle: {
+    marginTop: 8,
+    color: "#777",
   },
 });
