@@ -4,24 +4,28 @@ import { Ionicons } from "@expo/vector-icons";
 type MealItemProps = {
   name: string;
   type: "Breakfast" | "Lunch" | "Dinner";
+  notes?: string;
   onPress?: () => void;
+  onDelete?: () => void;
 };
-export default function MealItem({name, type, onPress}: MealItemProps) {
+export default function MealItem({name, type, notes, onPress, onDelete}: MealItemProps) {
   return (
-    <View style={styles.container}>
+    <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.info}>
         <Text style={styles.name}>{name}</Text>
-
+        {notes && (
+          <Text style={styles.notes}>{notes}</Text>
+        )}
         <View style={styles.typeContainer}>
           <Ionicons name="restaurant-outline" size={16} color="#666" />
           <Text style={styles.type}>{type}</Text>
         </View>
       </View>
 
-      <Pressable style={styles.deleteButton} onPress={onPress}>
+      <Pressable style={styles.deleteButton} onPress={onDelete}>
         <Ionicons name="trash-outline" size={22} color="#ef4444" />
       </Pressable>
-    </View>
+    </Pressable>
   );
 }
 
@@ -60,5 +64,11 @@ const styles = StyleSheet.create({
 
   deleteButton: {
     padding: 8,
+  },
+
+  notes: {
+    marginTop: 4,
+    color: "#666",
+    fontSize: 14,
   },
 });

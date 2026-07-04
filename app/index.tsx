@@ -1,128 +1,50 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Header from "../components/Header";
-import InputField from "../components/InputField";
+import { useRouter } from "expo-router";
+
 import PrimaryButton from "../components/PrimaryButton";
-import MealItem from "../components/MealItem";
-import MealTypeOption from "../components/MealTypeOption";
-import { useState } from "react";
+import Header from "@/components/Header";
 
-type Meal = {
-  id: string;
-  name: string;
-  type: "Breakfast" | "Lunch" | "Dinner";
-};
-export default function Index() {
-  const [mealType, setMealType] = useState<Meal["type"] | "">("");
-  const [meals, setMeals] = useState<Meal[]>([]);
-  const [mealName, setMealName] = useState("");
+export default function Home() {
+  const router = useRouter();
 
-  const [structure, setStructure] = useState({}); // using this variable to check structure of data in prevMeals and ...prevMeals when we append new meal
-
-  const AddMeal = () => {
-
-    if (!mealName.trim() || mealType === "") {
-      alert("Please enter a meal name and select a meal type.");
-      return;
-    }
-        
-    const newMeal: Meal = {
-      id: Date.now().toString(),
-      name: mealName.trim(),
-      type: mealType,
-    };
-
-    // setMeals((prevMeals) => [...prevMeals, newMeal]);
-    setMeals((prevMeals) => {
-      // console.log("prevMeals ",prevMeals)
-      // console.log("spread kar raha hu ",...prevMeals)
-      setStructure([prevMeals, newMeal]);
-      console.log("structure ", structure)
-
-      return [...prevMeals, newMeal];
-    });
-    setMealName("");
-    setMealType("");
-  }
-
-  const deleteMeal = (id: string) => {
-    setMeals((prevMeals) => {
-      return prevMeals.filter((meal) => meal.id !== id);
-    });
-  }
   return (
     <SafeAreaView style={styles.container}>
-      <Header 
-      icon="restaurant-outline"
-      title="Meal Tracker" 
+      <Header
+        icon="restaurant-outline"
+        title="Meal Tracker"
+        subtitle="Track, manage and explore your meals easily."
       />
+      
+      <View style={styles.hero}>
+        <View style={styles.iconContainer}>
+          <Ionicons
+            name="restaurant"
+            size={70}
+            color="#fff"
+          />
+        </View>
 
-      <View style={styles.form}>
-        <InputField
-          keyboardType="default"
-          placeholder="Meal Name"
-          value={mealName}
-          onChangeText={setMealName}
-        />
+        <Text style={styles.title}>Meal Tracker</Text>
 
-        <MealTypeOption
-          label="Breakfast"
-          selected={mealType === "Breakfast"}
-          onPress={() => {
-            setMealType("Breakfast")
-          }}
-        />
-
-        <MealTypeOption
-          label="Lunch"
-          selected={mealType === "Lunch"}
-          onPress={() => {
-            setMealType("Lunch")
-          }}
-        />
-
-        <MealTypeOption
-          label="Dinner"
-          selected={mealType === "Dinner"}
-          onPress={() => {
-            setMealType("Dinner")
-          }}
-        />
-
-        <PrimaryButton
-          title="Add Meal"
-          onPress={AddMeal}
-        />
+        <Text style={styles.subtitle}>
+          Organize your meals, explore your food history,
+          and keep everything in one place.
+        </Text>
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Ready to start?</Text>
 
-      <View style={styles.listContainer}>
-        <Text style={styles.heading}>Meals</Text>
+        <Text style={styles.cardText}>
+          Add meals, browse your collection and view
+          detailed information about every meal.
+        </Text>
 
-        <FlatList
-          data={meals}
-          renderItem={({ item }) => (
-          <MealItem
-            name={item.name}
-            type={item.type}
-            onPress={() => deleteMeal(item.id)}
-          />
-          )} 
-          keyExtractor={(item) => item.id}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons
-                name="fast-food-outline"
-                size={60}
-                color="#cbd5e1"
-              />
-              <Text style={styles.emptyTitle}>🍽️ No meals yet</Text>
-              <Text style={styles.emptySubtitle}>
-                Add your first meal above.
-              </Text>
-            </View>
-          }
+        <PrimaryButton
+          title="View Meals 🍽️"
+          onPress={() => router.push("/meals")}
         />
       </View>
     </SafeAreaView>
@@ -132,38 +54,61 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#f8fafc",
+    padding: 24,
+    justifyContent: "space-between",
   },
 
-  form: {
-    marginTop: 20,
-    gap: 16,
-  },
-
-  listContainer: {
-    flex: 1,
-    marginTop: 24,
-  },
-
-  heading: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 16,
-  },
-
-  emptyContainer: {
-    marginTop: 60,
+  hero: {
+    marginTop: 40,
     alignItems: "center",
   },
 
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
+  iconContainer: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: "#2563eb",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 8,
   },
 
-  emptySubtitle: {
-    marginTop: 8,
-    color: "#777",
+  title: {
+    marginTop: 25,
+    fontSize: 34,
+    fontWeight: "bold",
+    color: "#0f172a",
+  },
+
+  subtitle: {
+    marginTop: 12,
+    textAlign: "center",
+    fontSize: 16,
+    color: "#64748b",
+    lineHeight: 24,
+    paddingHorizontal: 10,
+  },
+
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 24,
+    elevation: 5,
+    marginBottom: 30,
+  },
+
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#0f172a",
+    marginBottom: 10,
+  },
+
+  cardText: {
+    fontSize: 15,
+    color: "#64748b",
+    lineHeight: 24,
+    marginBottom: 25,
   },
 });
